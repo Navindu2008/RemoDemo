@@ -10,6 +10,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.roomdemo.db.Subscriber
 import com.example.roomdemo.db.SubscriberRepository
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.regex.Pattern
 
@@ -43,8 +44,8 @@ class SubscriberViewModel(private val repository: SubscriberRepository):ViewMode
             statusMessage.value = Event("enter Email ")
         }else  if(inputName.value==null){
             statusMessage.value = Event("enter Name ")
-        }else if(Patterns.EMAIL_ADDRESS.matcher(inputEmail.value!!).matches()){
-            statusMessage.value = Event("enter proper Email ")
+       // }else if(Patterns.EMAIL_ADDRESS.matcher(inputEmail.value!!).matches()){
+          //  statusMessage.value = Event("enter proper Email ")
         }
         else {
 
@@ -60,8 +61,8 @@ class SubscriberViewModel(private val repository: SubscriberRepository):ViewMode
                 val email = inputEmail.value!!
                 insert(Subscriber(0, name, email))
 
-                inputEmail.value = ""
-                inputName.value = ""
+                inputEmail.postValue("")
+                inputName.postValue("")
             }
         }
     }
@@ -74,63 +75,64 @@ class SubscriberViewModel(private val repository: SubscriberRepository):ViewMode
     }
 
     fun insert(subscriber: Subscriber) {
-        viewModelScope.launch {
+
+        viewModelScope.launch(Dispatchers.IO) {
           var newRowId =  repository.insert(subscriber)
             if(newRowId > -1) {
 
 
-                statusMessage.value = Event("subscriber inserted successfully")
+                statusMessage.postValue(Event("subscriber inserted successfully"))
             }else{
 
-                statusMessage.value = Event("Error Occured")
+                statusMessage.postValue(Event("Error Occurred"))
             }
         }
 
     }
 
     fun update(subscriber: Subscriber) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
           val noOfRows=  repository.update(subscriber)
             if (noOfRows >0) {
 
-                inputName.value = ""
-                inputEmail.value = ""
+                inputName.postValue("")
+                inputEmail.postValue("")
                 isUpdateOrDelete = false
 
-                saveOrUpdateButtonText.value = "Save"
-                clearAllOrDeleteButtonText.value = "ClearAll"
-                statusMessage.value = Event("subscriber updated successfully")
+                saveOrUpdateButtonText.postValue("Save")
+                clearAllOrDeleteButtonText.postValue("ClearAll")
+                statusMessage.postValue(Event("subscriber updated successfully"))
             }else {
-                statusMessage.value = Event("Error in updated ")
+                statusMessage.postValue(Event("Error in updated "))
             }
         }
 
     }
 
     fun delete(subscriber: Subscriber) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             val noOfRows=  repository.delete(subscriber)
             if (noOfRows >0) {
-                inputName.value = ""
-                inputEmail.value = ""
+                inputName.postValue("")
+                inputEmail.postValue("")
                 isUpdateOrDelete = false
 
-                saveOrUpdateButtonText.value = "Save"
-                clearAllOrDeleteButtonText.value = "ClearAll"
-                statusMessage.value = Event("subscriber deleted successfully")
+                saveOrUpdateButtonText.postValue("Save")
+                clearAllOrDeleteButtonText.postValue("ClearAll")
+                statusMessage.postValue(Event("subscriber deleted successfully"))
             }
             else
             {
-                statusMessage.value = Event("error in  delete")
+                statusMessage.postValue(Event("error in  delete"))
             }
         }
 
     }
 
     fun clearAll() {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             repository.deleteAll()
-            statusMessage.value =Event("all subscriber deleted successfully")
+            statusMessage.postValue(Event("all subscriber deleted successfully"))
         }
 
     }
